@@ -10,4 +10,4 @@ Generate **StateMachine** skeleton scripts with few clicks.
 - Set parameters to customize the script.
 - Generate the skeleton script by clicking the **Generate** button.
 
-![Preview](https://kevincastejon.github.io/Unity-StateMachineGenerator/Assets/KevinCastejon/StateMachineGenerator/Documentation/Preview.png)
+![Preview](https://kevincastejon.github.io/Unity-StateMachineGenerator/Assets/KevinCastejon/StateMachineGenerator/Documentation/preview.png)

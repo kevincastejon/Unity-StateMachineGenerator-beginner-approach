@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 
-namespace KevinCastejon.Tools
+namespace KevinCastejon.StateMachineGenerator
 {
     public enum InitialStateMode
     {

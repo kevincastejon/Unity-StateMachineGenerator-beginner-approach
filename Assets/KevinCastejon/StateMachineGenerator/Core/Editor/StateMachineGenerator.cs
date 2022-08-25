@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -36,11 +34,11 @@ namespace KevinCastejon.StateMachineGenerator
         private static GUIStyle _BoldStyle;
         private static TextInfo _TInfo;
 
-        [MenuItem("Window/StateMachineGenerator")]
+        [MenuItem("Window/StateMachine Generator", false, 211)]
         public static void ShowWindow()
         {
             EditorWindow window = GetWindow(typeof(StateMachineGenerator));
-            window.minSize = new Vector2(550, 400);
+            window.minSize = new Vector2(550, 450);
             window.titleContent = new GUIContent("StateMachine Generator");
         }
 
@@ -114,47 +112,21 @@ namespace KevinCastejon.StateMachineGenerator
             _ErrorStyle.normal.textColor = Color.red;
             _BoldStyle.fontStyle = FontStyle.Bold;
             _enumName = EditorGUILayout.TextField(new GUIContent("Enum name", "Enter a name for the Enum holding your state machine states"), "MyEnum");
-            //EditorGUILayout.BeginHorizontal();
-            //int newCount = Mathf.Max(0, EditorGUILayout.DelayedIntField("Number of states", _states.Count));
-            //if (GUILayout.Button("-"))
-            //{
-            //    newCount--;
-            //}
-            //if (GUILayout.Button("+"))
-            //{
-            //    newCount++;
-            //}
-            //EditorGUILayout.EndHorizontal();
             _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUILayout.Height(_currentScrollViewHeight - 40f));
             Rect topRect = EditorGUILayout.GetControlRect(false, _list.GetHeight() - 22f);
             _list.DoList(topRect);
-            //while (newCount < _states.Count)
-            //    _states.RemoveAt(_states.Count - 1);
-            //while (newCount > _states.Count)
-            //    _states.Add("    STATE_NAME_" + _states.Count);
-            //for (int i = 0; i < _states.Count; i++)
-            //{
-            //    EditorGUILayout.BeginHorizontal();
-            //    _states[i] = EditorGUILayout.TextField("  State " + i, _states[i]).Trim().ToUpper().Replace(" ", "_");
-            //    EditorGUI.BeginDisabledGroup(_initialStateMode == InitialStateMode.NONE);
-            //    bool isDefault = EditorGUILayout.ToggleLeft(_defaultState == i ? "Default" : "", _defaultState == i);
-            //    EditorGUI.EndDisabledGroup();
-            //    if (isDefault)
-            //    {
-            //        _defaultState = i;
-            //    }
-            //    EditorGUILayout.EndHorizontal();
-            //}
             GUILayout.EndScrollView();
             EditorGUILayout.BeginHorizontal();
             EditorGUI.BeginDisabledGroup(_list.count == 0);
-            if (GUILayout.Button("-"))
+            Rect buttonsRect = EditorGUILayout.GetControlRect(false, 20f);
+            float btnsWidth = 30f;
+            if (GUI.Button(new Rect(buttonsRect.width - (btnsWidth * 2 + 5), buttonsRect.y, btnsWidth, buttonsRect.height), "-"))
             {
                 OnRemoveCallback();
                 Repaint();
             }
             EditorGUI.EndDisabledGroup();
-            if (GUILayout.Button("+"))
+            if (GUI.Button(new Rect(buttonsRect.width - btnsWidth, buttonsRect.y, btnsWidth, buttonsRect.height), "+"))
             {
                 OnAddCallback();
                 Repaint();
@@ -171,6 +143,7 @@ namespace KevinCastejon.StateMachineGenerator
                 _initialStateOpen = EditorGUILayout.BeginFoldoutHeaderGroup(_initialStateOpen, "Initial state parameters");
                 if (_initialStateOpen)
                 {
+                    EditorGUI.indentLevel++;
                     bool noInitial;
                     bool initState;
                     bool initTrans;
@@ -187,16 +160,18 @@ namespace KevinCastejon.StateMachineGenerator
                         _initialStateMode = InitialStateMode.SETSTATE;
                     }
                     EditorGUI.BeginChangeCheck();
-                    initTrans = EditorGUILayout.Toggle(new GUIContent("Initial transition", "A proper transition to the state that is checked \"default\" will happen at start"), _initialStateMode == InitialStateMode.TRANSITION);
+                    initTrans = EditorGUILayout.Toggle(new GUIContent("Initial transition", "A proper transition to the state that is checked \"default\" will happen at start (calling the Enter method for this state)"), _initialStateMode == InitialStateMode.TRANSITION);
                     if (EditorGUI.EndChangeCheck() && initTrans)
                     {
                         _initialStateMode = InitialStateMode.TRANSITION;
                     }
+                    EditorGUI.indentLevel--;
                 }
                 EditorGUILayout.EndFoldoutHeaderGroup();
                 _codeStyleOpen = EditorGUILayout.BeginFoldoutHeaderGroup(_codeStyleOpen, "Code styling parameters");
                 if (_codeStyleOpen)
                 {
+                    EditorGUI.indentLevel++;
                     EditorGUILayout.BeginHorizontal();
                     _useRegions = EditorGUILayout.Toggle("Use regions", _useRegions);
                     if (_useRegions)
@@ -210,6 +185,7 @@ namespace KevinCastejon.StateMachineGenerator
                     EditorGUILayout.EndHorizontal();
                     _groupByPhase = !EditorGUILayout.ToggleLeft(new GUIContent("Group by state", "Methods will be grouped by state"), !_groupByPhase);
                     _groupByPhase = EditorGUILayout.ToggleLeft(new GUIContent("Group by phase", "Methods will be grouped by phase (enter/update/exit)"), _groupByPhase);
+                    EditorGUI.indentLevel--;
                 }
                 EditorGUILayout.EndFoldoutHeaderGroup();
                 if (GUILayout.Button("Generate"))

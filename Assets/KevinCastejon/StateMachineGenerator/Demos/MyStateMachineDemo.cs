@@ -6,10 +6,11 @@ public enum MyEnum
     WALK,
     RUN,
     JUMP,
+    ATTACK,
 }
 
 
-public class MyStateMachine : MonoBehaviour
+public class MyStateMachineDemo : MonoBehaviour
 {
 
     private MyEnum _currentState;
@@ -38,6 +39,9 @@ public class MyStateMachine : MonoBehaviour
             case MyEnum.JUMP:
                 OnEnterJump();
                 break;
+            case MyEnum.ATTACK:
+                OnEnterAttack();
+                break;
             default:
                 Debug.LogError("OnStateEnter: Invalid state " + state.ToString());
                 break;
@@ -59,6 +63,9 @@ public class MyStateMachine : MonoBehaviour
             case MyEnum.JUMP:
                 OnUpdateJump();
                 break;
+            case MyEnum.ATTACK:
+                OnUpdateAttack();
+                break;
             default:
                 Debug.LogError("OnStateUpdate: Invalid state " + state.ToString());
                 break;
@@ -79,6 +86,9 @@ public class MyStateMachine : MonoBehaviour
                 break;
             case MyEnum.JUMP:
                 OnExitJump();
+                break;
+            case MyEnum.ATTACK:
+                OnExitAttack();
                 break;
             default:
                 Debug.LogError("OnStateExit: Invalid state " + state.ToString());
@@ -125,6 +135,15 @@ public class MyStateMachine : MonoBehaviour
     {
     }
     private void OnExitJump()
+    {
+    }
+    private void OnEnterAttack()
+    {
+    }
+    private void OnUpdateAttack()
+    {
+    }
+    private void OnExitAttack()
     {
     }
 }

@@ -16,7 +16,7 @@ namespace KevinCastejon.StateMachineGenerator
     }
     public class StateMachineGenerator : EditorWindow
     {
-        private string _enumName;
+        private string _enumName = "MyStates";
         private List<string> _states;
         private ReorderableList _list;
         private int _defaultState = 0;
@@ -111,7 +111,7 @@ namespace KevinCastejon.StateMachineGenerator
             _TInfo = new CultureInfo("en-US", false).TextInfo;
             _ErrorStyle.normal.textColor = Color.red;
             _BoldStyle.fontStyle = FontStyle.Bold;
-            _enumName = EditorGUILayout.TextField(new GUIContent("Enum name", "Enter a name for the Enum holding your state machine states"), "MyEnum");
+            _enumName = EditorGUILayout.TextField(new GUIContent("Enum name", "Enter a name for the Enum holding your state machine states"), _enumName);
             _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUILayout.Height(_currentScrollViewHeight - 40f));
             Rect topRect = EditorGUILayout.GetControlRect(false, _list.GetHeight() - 22f);
             _list.DoList(topRect);

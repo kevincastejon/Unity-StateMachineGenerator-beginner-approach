@@ -2,6 +2,10 @@
 
 Generate **StateMachine** skeleton scripts in few seconds.
 
+[Get it on the AssetStore](https://assetstore.unity.com/packages/tools/utilities/statemachine-generator-229841)
+
+[Get the Unity package](https://github.com/kevincastejon/Unity-StateMachineGenerator/releases/tag/v1.0)
+
 ## How to use
 
 - Open the **StateMachine Generator** window by using the ***Window*** menu and selecting ***StateMachine Generator***.

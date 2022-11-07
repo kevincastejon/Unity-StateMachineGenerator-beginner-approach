@@ -18,3 +18,5 @@ Generate **StateMachine** skeleton scripts in few seconds.
 ![Tuto2](https://kevincastejon.github.io/Unity-StateMachineGenerator/Assets/KevinCastejon/StateMachineGenerator/Documentation/Tuto2.png)
 ![Tuto3](https://kevincastejon.github.io/Unity-StateMachineGenerator/Assets/KevinCastejon/StateMachineGenerator/Documentation/Tuto3.png)
 ![Tuto4](https://kevincastejon.github.io/Unity-StateMachineGenerator/Assets/KevinCastejon/StateMachineGenerator/Documentation/Tuto4.png)
+![Tuto5](https://kevincastejon.github.io/Unity-StateMachineGenerator/Assets/KevinCastejon/StateMachineGenerator/Documentation/Tuto5.png)
+![Tuto6](https://kevincastejon.github.io/Unity-StateMachineGenerator/Assets/KevinCastejon/StateMachineGenerator/Documentation/Tuto6.png)

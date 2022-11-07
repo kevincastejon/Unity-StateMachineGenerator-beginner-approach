@@ -21,9 +21,9 @@ namespace KevinCastejon.StateMachineGenerator
         private ReorderableList _list;
         private int _defaultState = 0;
         private bool _publicTransitionMethod = false;
+        private bool _includeFixedUpdateCycle = false;
         private bool _useRegions = false;
-        private bool _spaceRegions = false;
-        private bool _groupByPhase = false;
+        private bool _groupByCycle = false;
         private InitialStateMode _initialStateMode;
         private bool _codeStyleOpen = false;
         private bool _initialStateOpen = false;
@@ -139,7 +139,8 @@ namespace KevinCastejon.StateMachineGenerator
             }
             if (_states.Count > 0)
             {
-                _publicTransitionMethod = EditorGUILayout.Toggle(new GUIContent("Public transition method", "Check it if you want the TransitionToState method to be public"), _publicTransitionMethod);
+                _publicTransitionMethod = EditorGUILayout.ToggleLeft(new GUIContent("Public transition method", "Check it if you want the TransitionToState method to be public"), _publicTransitionMethod);
+                _includeFixedUpdateCycle = EditorGUILayout.ToggleLeft(new GUIContent("Include FixedUpdate cycle", "Check it if you want to include a FixedUpdate cycle"), _includeFixedUpdateCycle);
                 _initialStateOpen = EditorGUILayout.BeginFoldoutHeaderGroup(_initialStateOpen, "Initial state parameters");
                 if (_initialStateOpen)
                 {
@@ -148,19 +149,19 @@ namespace KevinCastejon.StateMachineGenerator
                     bool initState;
                     bool initTrans;
                     EditorGUI.BeginChangeCheck();
-                    noInitial = EditorGUILayout.Toggle(new GUIContent("None", "The default state will be the first state"), _initialStateMode == InitialStateMode.NONE);
+                    noInitial = EditorGUILayout.ToggleLeft(new GUIContent("None", "The default state will be the first state"), _initialStateMode == InitialStateMode.NONE);
                     if (EditorGUI.EndChangeCheck() && noInitial)
                     {
                         _initialStateMode = InitialStateMode.NONE;
                     }
                     EditorGUI.BeginChangeCheck();
-                    initState = EditorGUILayout.Toggle(new GUIContent("Initial state", "The default state will be the one that is checked \"default\""), _initialStateMode == InitialStateMode.SETSTATE);
+                    initState = EditorGUILayout.ToggleLeft(new GUIContent("Initial state", "The default state will be the one that is checked \"default\""), _initialStateMode == InitialStateMode.SETSTATE);
                     if (EditorGUI.EndChangeCheck() && initState)
                     {
                         _initialStateMode = InitialStateMode.SETSTATE;
                     }
                     EditorGUI.BeginChangeCheck();
-                    initTrans = EditorGUILayout.Toggle(new GUIContent("Initial transition", "A proper transition to the state that is checked \"default\" will happen at start (calling the Enter method for this state)"), _initialStateMode == InitialStateMode.TRANSITION);
+                    initTrans = EditorGUILayout.ToggleLeft(new GUIContent("Initial transition", "A proper transition to the state that is checked \"default\" will happen at start (calling the Enter method for this state)"), _initialStateMode == InitialStateMode.TRANSITION);
                     if (EditorGUI.EndChangeCheck() && initTrans)
                     {
                         _initialStateMode = InitialStateMode.TRANSITION;
@@ -173,18 +174,10 @@ namespace KevinCastejon.StateMachineGenerator
                 {
                     EditorGUI.indentLevel++;
                     EditorGUILayout.BeginHorizontal();
-                    _useRegions = EditorGUILayout.Toggle("Use regions", _useRegions);
-                    if (_useRegions)
-                    {
-                        _spaceRegions = EditorGUILayout.Toggle("Space regions", _spaceRegions);
-                    }
-                    else
-                    {
-                        _spaceRegions = false;
-                    }
+                    _useRegions = EditorGUILayout.ToggleLeft("Use regions", _useRegions);
                     EditorGUILayout.EndHorizontal();
-                    _groupByPhase = !EditorGUILayout.ToggleLeft(new GUIContent("Group by state", "Methods will be grouped by state"), !_groupByPhase);
-                    _groupByPhase = EditorGUILayout.ToggleLeft(new GUIContent("Group by phase", "Methods will be grouped by phase (enter/update/exit)"), _groupByPhase);
+                    _groupByCycle = !EditorGUILayout.ToggleLeft(new GUIContent("Group by state", "Methods will be grouped by state"), !_groupByCycle);
+                    _groupByCycle = EditorGUILayout.ToggleLeft(new GUIContent("Group by cycle", "Methods will be grouped by cycle (enter/update/exit)"), _groupByCycle);
                     EditorGUI.indentLevel--;
                 }
                 EditorGUILayout.EndFoldoutHeaderGroup();
@@ -241,7 +234,11 @@ namespace KevinCastejon.StateMachineGenerator
                 {
                     outfile.WriteLine($"using UnityEngine;");
                     outfile.WriteLine($"");
-                    if (_useRegions) outfile.WriteLine($"#region States");
+                    if (_useRegions)
+                    {
+                        outfile.WriteLine($"#region States");
+                        outfile.WriteLine($"");
+                    }
                     outfile.WriteLine($"public enum {_enumName}");
                     outfile.WriteLine($"{{");
                     foreach (string state in _states)
@@ -250,18 +247,29 @@ namespace KevinCastejon.StateMachineGenerator
                     }
                     outfile.WriteLine($"}}");
                     outfile.WriteLine($"");
-                    if (_useRegions) outfile.WriteLine($"#endregion");
-                    outfile.WriteLine($"");
+                    if (_useRegions)
+                    {
+                        outfile.WriteLine($"#endregion");
+                        outfile.WriteLine($"");
+                    }
                     outfile.WriteLine($"public class {className} : MonoBehaviour");
                     outfile.WriteLine($"{{");
-                    outfile.WriteLine($"");
                     outfile.WriteLine($"    private {_enumName} _currentState;");
                     outfile.WriteLine($"");
-                    if (_useRegions) outfile.WriteLine($"    #region Public properties");
+                    if (_useRegions)
+                    {
+                        outfile.WriteLine($"#region Public properties");
+                        outfile.WriteLine($"");
+                    }
                     outfile.WriteLine($"    public {_enumName} CurrentState {{ get => _currentState; private set => _currentState = value; }}");
-                    if (_useRegions) outfile.WriteLine($"    #endregion");
-                    if (_spaceRegions) outfile.WriteLine($"");
-                    if (_useRegions) outfile.WriteLine($"    #region Init");
+                    outfile.WriteLine($"");
+                    if (_useRegions)
+                    {
+                        outfile.WriteLine($"#endregion");
+                        outfile.WriteLine($"");
+                        outfile.WriteLine($"#region Unity Life Cycles");
+                        outfile.WriteLine($"");
+                    }
                     outfile.WriteLine($"    private void Start()");
                     outfile.WriteLine($"    {{");
                     if (_initialStateMode == InitialStateMode.SETSTATE)
@@ -275,16 +283,25 @@ namespace KevinCastejon.StateMachineGenerator
                         outfile.WriteLine($"        OnEnter{methodName}();");
                     }
                     outfile.WriteLine($"    }}");
-                    if (_useRegions) outfile.WriteLine($"    #endregion");
-                    if (_spaceRegions) outfile.WriteLine($"");
-                    if (_useRegions) outfile.WriteLine($"    #region Update");
                     outfile.WriteLine($"    private void Update()");
                     outfile.WriteLine($"    {{");
                     outfile.WriteLine($"        OnStateUpdate(CurrentState);");
                     outfile.WriteLine($"    }}");
-                    if (_useRegions) outfile.WriteLine($"    #endregion");
-                    if (_spaceRegions) outfile.WriteLine($"");
-                    if (_useRegions) outfile.WriteLine($"    #region State Machine");
+                    if (_includeFixedUpdateCycle)
+                    {
+                        outfile.WriteLine($"    private void FixedUpdate()");
+                        outfile.WriteLine($"    {{");
+                        outfile.WriteLine($"        OnStateFixedUpdate(CurrentState);");
+                        outfile.WriteLine($"    }}");
+                    }
+                    outfile.WriteLine($"");
+                    if (_useRegions)
+                    {
+                        outfile.WriteLine($"#endregion");
+                        outfile.WriteLine($"");
+                        outfile.WriteLine($"#region State Machine");
+                        outfile.WriteLine($"");
+                    }
                     outfile.WriteLine($"    private void OnStateEnter({_enumName} state)");
                     outfile.WriteLine($"    {{");
                     outfile.WriteLine($"        switch (state)");
@@ -301,7 +318,6 @@ namespace KevinCastejon.StateMachineGenerator
                     outfile.WriteLine($"                break;");
                     outfile.WriteLine($"        }}");
                     outfile.WriteLine($"    }}");
-
                     outfile.WriteLine($"    private void OnStateUpdate({_enumName} state)");
                     outfile.WriteLine($"    {{");
                     outfile.WriteLine($"        switch (state)");
@@ -313,11 +329,28 @@ namespace KevinCastejon.StateMachineGenerator
                         outfile.WriteLine($"                OnUpdate{stateMethod}();");
                         outfile.WriteLine($"                break;");
                     }
-                    outfile.WriteLine($"            default:");
-                    outfile.WriteLine($"                Debug.LogError(\"OnStateUpdate: Invalid state \" + state.ToString());");
-                    outfile.WriteLine($"                break;");
                     outfile.WriteLine($"        }}");
                     outfile.WriteLine($"    }}");
+                    if (_includeFixedUpdateCycle)
+                    {
+                        outfile.WriteLine($"    private void OnStateFixedUpdate({_enumName} state)");
+                        outfile.WriteLine($"    {{");
+                        outfile.WriteLine($"        switch (state)");
+                        outfile.WriteLine($"        {{");
+                        foreach (string state in _states)
+                        {
+                            string stateMethod = _TInfo.ToTitleCase(state.Replace("_", " ").ToLower()).Replace(" ", "");
+                            outfile.WriteLine($"            case {_enumName}.{state}:");
+                            outfile.WriteLine($"                OnFixedUpdate{stateMethod}();");
+                            outfile.WriteLine($"                break;");
+                        }
+                        outfile.WriteLine($"            default:");
+                        outfile.WriteLine($"                Debug.LogError(\"OnStateFixedUpdate: Invalid state \" + state.ToString());");
+                        outfile.WriteLine($"                break;");
+                        outfile.WriteLine($"        }}");
+                        outfile.WriteLine($"    }}");
+                    }
+
                     outfile.WriteLine($"    private void OnStateExit({_enumName} state)");
                     outfile.WriteLine($"    {{");
                     outfile.WriteLine($"        switch (state)");
@@ -341,30 +374,52 @@ namespace KevinCastejon.StateMachineGenerator
                     outfile.WriteLine($"        CurrentState = toState;");
                     outfile.WriteLine($"        OnStateEnter(toState);");
                     outfile.WriteLine($"    }}");
-                    if (_useRegions) outfile.WriteLine($"    #endregion");
-                    if (_spaceRegions) outfile.WriteLine($"");
-                    if (!_groupByPhase)
+                    outfile.WriteLine($"");
+                    if (_useRegions)
+                    {
+                        outfile.WriteLine($"#endregion");
+                        outfile.WriteLine($"");
+                    }
+                    if (!_groupByCycle)
                     {
                         foreach (string state in _states)
                         {
                             string stateMethod = _TInfo.ToTitleCase(state.Replace("_", " ").ToLower()).Replace(" ", "");
-                            if (_useRegions) outfile.WriteLine($"    #region State {state}");
+                            if (_useRegions)
+                            {
+                                outfile.WriteLine($"#region State {state}");
+                                outfile.WriteLine($"");
+                            }
                             outfile.WriteLine($"    private void OnEnter{stateMethod}()");
                             outfile.WriteLine($"    {{");
                             outfile.WriteLine($"    }}");
                             outfile.WriteLine($"    private void OnUpdate{stateMethod}()");
                             outfile.WriteLine($"    {{");
                             outfile.WriteLine($"    }}");
+                            if (_includeFixedUpdateCycle)
+                            {
+                                outfile.WriteLine($"    private void OnFixedUpdate{stateMethod}()");
+                                outfile.WriteLine($"    {{");
+                                outfile.WriteLine($"    }}");
+                            }
                             outfile.WriteLine($"    private void OnExit{stateMethod}()");
                             outfile.WriteLine($"    {{");
                             outfile.WriteLine($"    }}");
-                            if (_useRegions) outfile.WriteLine($"    #endregion");
-                            if (_spaceRegions) outfile.WriteLine($"");
+                            outfile.WriteLine($"");
+                            if (_useRegions)
+                            {
+                                outfile.WriteLine($"#endregion");
+                                outfile.WriteLine($"");
+                            }
                         }
                     }
                     else
                     {
-                        if (_useRegions) outfile.WriteLine($"    #region EnterState");
+                        if (_useRegions)
+                        {
+                            outfile.WriteLine($"#region EnterState");
+                            outfile.WriteLine($"");
+                        }
                         foreach (string state in _states)
                         {
                             string stateMethod = _TInfo.ToTitleCase(state.Replace("_", " ").ToLower()).Replace(" ", "");
@@ -372,7 +427,14 @@ namespace KevinCastejon.StateMachineGenerator
                             outfile.WriteLine($"    {{");
                             outfile.WriteLine($"    }}");
                         }
-                        if (_useRegions) outfile.WriteLine($"    #region UpdateState");
+                        outfile.WriteLine($"");
+                        if (_useRegions)
+                        {
+                            outfile.WriteLine($"#endregion");
+                            outfile.WriteLine($"");
+                            outfile.WriteLine($"#region UpdateState");
+                            outfile.WriteLine($"");
+                        }
                         foreach (string state in _states)
                         {
                             string stateMethod = _TInfo.ToTitleCase(state.Replace("_", " ").ToLower()).Replace(" ", "");
@@ -380,13 +442,50 @@ namespace KevinCastejon.StateMachineGenerator
                             outfile.WriteLine($"    {{");
                             outfile.WriteLine($"    }}");
                         }
-                        if (_useRegions) outfile.WriteLine($"    #region ExitState");
+                        outfile.WriteLine($"");
+                        if (_useRegions)
+                        {
+                            outfile.WriteLine($"#endregion");
+                            outfile.WriteLine($"");
+                        }
+                        if (_includeFixedUpdateCycle)
+                        {
+                            if (_useRegions)
+                            {
+                                outfile.WriteLine($"#region FixedUpdateState");
+                                outfile.WriteLine($"");
+                            }
+                            foreach (string state in _states)
+                            {
+                                string stateMethod = _TInfo.ToTitleCase(state.Replace("_", " ").ToLower()).Replace(" ", "");
+                                outfile.WriteLine($"    private void OnFixedUpdate{stateMethod}()");
+                                outfile.WriteLine($"    {{");
+                                outfile.WriteLine($"    }}");
+                            }
+                            outfile.WriteLine($"");
+                            if (_useRegions)
+                            {
+                                outfile.WriteLine($"#endregion");
+                                outfile.WriteLine($"");
+                            }
+                        }
+                        if (_useRegions)
+                        {
+                            outfile.WriteLine($"#region ExitState");
+                            outfile.WriteLine($"");
+                        }
                         foreach (string state in _states)
                         {
                             string stateMethod = _TInfo.ToTitleCase(state.Replace("_", " ").ToLower()).Replace(" ", "");
                             outfile.WriteLine($"    private void OnExit{stateMethod}()");
                             outfile.WriteLine($"    {{");
                             outfile.WriteLine($"    }}");
+                        }
+                        outfile.WriteLine($"");
+                        if (_useRegions)
+                        {
+                            outfile.WriteLine($"#endregion");
+                            outfile.WriteLine($"");
                         }
                     }
                     outfile.WriteLine($"}}");

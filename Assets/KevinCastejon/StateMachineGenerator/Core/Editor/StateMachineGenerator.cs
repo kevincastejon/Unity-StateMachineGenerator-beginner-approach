@@ -329,6 +329,9 @@ namespace KevinCastejon.StateMachineGenerator
                         outfile.WriteLine($"                OnUpdate{stateMethod}();");
                         outfile.WriteLine($"                break;");
                     }
+                    outfile.WriteLine($"            default:");
+                    outfile.WriteLine($"                Debug.LogError(\"OnStateUpdate: Invalid state \" + state.ToString());");
+                    outfile.WriteLine($"                break;");
                     outfile.WriteLine($"        }}");
                     outfile.WriteLine($"    }}");
                     if (_includeFixedUpdateCycle)

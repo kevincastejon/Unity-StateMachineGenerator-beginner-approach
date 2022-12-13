@@ -2,9 +2,13 @@
 
 Generate **StateMachine** skeleton scripts in few seconds.
 
+[See online documentation](https://kevincastejon.github.io/Unity-StateMachineGenerator/)
+
 [Get it on the AssetStore](https://assetstore.unity.com/packages/tools/utilities/statemachine-generator-229841)
 
-[Get the Unity package](https://github.com/kevincastejon/Unity-StateMachineGenerator/releases/tag/v1.0)
+[Get the Unity package](https://github.com/kevincastejon/Unity-StateMachineGenerator/releases/latest)
+
+[See my other Unity packages](https://assetstore.unity.com/publishers/46935)
 
 ## How to use
 
